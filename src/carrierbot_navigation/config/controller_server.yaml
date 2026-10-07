@@ -24,33 +24,65 @@ controller_server:
       yaw_goal_tolerance: 3.14
       stateful: True
 
+    # ===== LOS + PID (carrierbot_los_controller) =====
+    # Chỉnh khi đang chạy: ros2 param set /controller_server FollowPath.kp 2.0
+    # Theo dõi: ros2 topic echo /FollowPath/los_debug
     FollowPath:
-      plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
-      desired_linear_vel: 2.0
-      max_linear_accel: 1.0
-      max_linear_decel: 1.5
-      lookahead_dist: 1.2
-      min_lookahead_dist: 0.25
-      max_lookahead_dist: 1.5
-      lookahead_time: 1.5
-      rotate_to_heading_angular_vel: 2.0
+      plugin: "carrierbot_los_controller::LosPidController"
+      # --- LOS: psi_d = alpha + atan(-(e + kappa*y_int) / Delta) ---
+      lookahead_min: 0.5          # Delta nhỏ nhất (m): nhỏ -> bám sát, dễ dao động
+      lookahead_max: 1.2          # Delta lớn nhất (m)
+      lookahead_time: 1.0         # Delta = lookahead_time * |v| (s); 0 = Delta cố định
+      los_integral_gain: 0.0      # kappa của ILOS; > 0 để bù trôi ngang lâu dài
+      tangent_window: 0.3         # m, đoạn đường dùng tính góc tiếp tuyến alpha
+      search_window: 2.0          # m, cửa sổ tìm điểm gần nhất phía trước
+      # --- PID góc hướng: omega = PID(psi_d - psi) ---
+      kp: 1.5
+      ki: 0.0
+      kd: 0.1
+      i_max: 0.5
+      d_filter: 0.7               # lọc thông thấp khâu D (0..1)
+      # --- Vận tốc (nên <= giới hạn của diff_drive_controller: 1.0 m/s, 1.5 rad/s) ---
+      desired_linear_vel: 0.5
+      max_angular_vel: 1.5
+      max_linear_accel: 0.8
+      max_linear_decel: 1.0
+      max_angular_accel: 1.5
+      use_rotate_in_place: true
+      rotate_in_place_angle: 0.9        # rad, lệch hướng lớn hơn -> quay tại chỗ
+      rotate_in_place_exit_angle: 0.3   # rad, quay đến khi lệch nhỏ hơn
+      approach_dist: 0.6                # m, bắt đầu giảm tốc trước đích
+      min_approach_vel: 0.05
       transform_tolerance: 0.1
-      use_velocity_scaled_lookahead_dist: false
-      min_approach_linear_velocity: 0.05
-      use_approach_linear_velocity_scaling: true
-      max_allowed_time_to_collision: 1.0
-      use_regulated_linear_velocity_scaling: true
-      use_cost_regulated_linear_velocity_scaling: true
-      regulated_linear_scaling_min_radius: 0.9
-      regulated_linear_scaling_min_speed: 0.25
-      use_rotate_to_heading: true
-      rotate_to_heading_min_angle: 1.2
-      curvature_lookahead_dist: 0.5
-      max_angular_accel: 3.2
-      goal_dist_tol: 0.5
-      cost_scaling_dist: 0.3
-      cost_scaling_gain: 1.0
-      inflation_cost_scaling_factor: 3.0
+
+    # ===== Regulated Pure Pursuit (cũ) - bỏ comment và comment khối LOS để quay lại =====
+    # FollowPath:
+    #   plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
+    #   desired_linear_vel: 2.0
+    #   max_linear_accel: 1.0
+    #   max_linear_decel: 1.5
+    #   lookahead_dist: 1.2
+    #   min_lookahead_dist: 0.25
+    #   max_lookahead_dist: 1.5
+    #   lookahead_time: 1.5
+    #   rotate_to_heading_angular_vel: 2.0
+    #   transform_tolerance: 0.1
+    #   use_velocity_scaled_lookahead_dist: false
+    #   min_approach_linear_velocity: 0.05
+    #   use_approach_linear_velocity_scaling: true
+    #   max_allowed_time_to_collision: 1.0
+    #   use_regulated_linear_velocity_scaling: true
+    #   use_cost_regulated_linear_velocity_scaling: true
+    #   regulated_linear_scaling_min_radius: 0.9
+    #   regulated_linear_scaling_min_speed: 0.25
+    #   use_rotate_to_heading: true
+    #   rotate_to_heading_min_angle: 1.2
+    #   curvature_lookahead_dist: 0.5
+    #   max_angular_accel: 3.2
+    #   goal_dist_tol: 0.5
+    #   cost_scaling_dist: 0.3
+    #   cost_scaling_gain: 1.0
+    #   inflation_cost_scaling_factor: 3.0
 
 
     # FollowPath:

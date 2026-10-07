@@ -1,0 +1,9 @@
+<class_libraries>
+  <library path="carrierbot_los_controller">
+    <class type="carrierbot_los_controller::LosPidController" base_class_type="nav2_core::Controller">
+      <description>
+        Bộ dẫn hướng LOS (có tùy chọn ILOS) + PID góc hướng cho CarrierBot
+      </description>
+    </class>
+  </library>
+</class_libraries>
