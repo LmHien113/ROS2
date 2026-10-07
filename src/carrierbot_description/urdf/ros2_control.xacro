@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<robot name="my_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <ros2_control name="RobotSystem" type="system">
+        <xacro:if value="$(arg is_sim)">
+            <xacro:if value="$(arg is_ignition)">
+                <hardware>
+                <plugin>ign_ros2_control/IgnitionSystem</plugin> 
+                </hardware>
+            </xacro:if>
+
+            <xacro:unless value="$(arg is_ignition)">
+                <hardware> 
+                <plugin>gz_ros2_control/GazeboSimSystem</plugin> 
+                </hardware>
+            </xacro:unless>
+        </xacro:if>
+
+        <xacro:unless value="$(arg is_sim)">
+            <hardware>
+                <plugin>carrierbot_firmware::CarrierbotInterface</plugin>
+                <param name="port">/dev/usbcan</param>
+                <param name="baudrate">2000000</param>
+            </hardware>
+        </xacro:unless>
+
+        <joint name="base_right_wheel_joint">
+            <command_interface name="velocity">
+                <param name="min">-1.0</param>
+                <param name="max">1.0</param>
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+
+        <joint name="base_left_wheel_joint">
+            <command_interface name="velocity">
+                <param name="min">-1.0</param>
+                <param name="max">1.0</param>
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+
+    </ros2_control>
+</robot>
